@@ -1,0 +1,9 @@
+﻿{
+  "Descriptor": {
+    "UId": "e91f5bc7-2cea-4b42-8f50-2411b71cbd5b",
+    "Name": "NrbDiscordAppEventListener",
+    "ModifiedOnUtc": "\/Date(1681392016000)\/",
+    "ManagerName": "SourceCodeSchemaManager",
+    "Caption": "DiscordAppEventListener"
+  }
+}

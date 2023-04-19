@@ -1,0 +1,9 @@
+﻿{
+  "Descriptor": {
+    "UId": "a620aede-6119-4314-b1e6-440bbbd4b5c0",
+    "Name": "NrbDiscordIncomingMessageConverter",
+    "ModifiedOnUtc": "\/Date(1681391437000)\/",
+    "ManagerName": "SourceCodeSchemaManager",
+    "Caption": "DiscordIncomingMessageConverter"
+  }
+}

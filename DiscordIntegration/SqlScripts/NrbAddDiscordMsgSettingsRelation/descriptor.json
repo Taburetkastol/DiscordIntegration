@@ -1,0 +1,10 @@
+﻿{
+  "SqlScript": {
+    "UId": "eca7e999-d7a0-93a3-b4ff-e1bf5d38a913",
+    "Name": "NrbAddDiscordMsgSettingsRelation",
+    "DBEngineType": 0,
+    "InstallType": 1,
+    "ModifiedOnUtc": "\/Date(1681386824000)\/",
+    "DependsOn": []
+  }
+}

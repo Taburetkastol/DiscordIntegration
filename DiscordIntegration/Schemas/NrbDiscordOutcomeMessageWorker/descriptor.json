@@ -1,0 +1,9 @@
+﻿{
+  "Descriptor": {
+    "UId": "b7aa7bfe-b7a9-467e-9c85-5de132111157",
+    "Name": "NrbDiscordOutcomeMessageWorker",
+    "ModifiedOnUtc": "\/Date(1681391913000)\/",
+    "ManagerName": "SourceCodeSchemaManager",
+    "Caption": "DiscordOutcomeMessageWorker"
+  }
+}

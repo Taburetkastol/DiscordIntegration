@@ -1,0 +1,9 @@
+﻿{
+  "Descriptor": {
+    "UId": "898a8bd9-61f3-4539-aec0-554b7d6be461",
+    "Name": "NrbDiscordAttachmentLoadWorker",
+    "ModifiedOnUtc": "\/Date(1681391878000)\/",
+    "ManagerName": "SourceCodeSchemaManager",
+    "Caption": "DiscordAttachmentLoadWorker"
+  }
+}

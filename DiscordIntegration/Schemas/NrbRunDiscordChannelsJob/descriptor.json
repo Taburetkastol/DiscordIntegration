@@ -1,0 +1,9 @@
+﻿{
+  "Descriptor": {
+    "UId": "89d3ade7-ef0c-458a-8d29-2e3d310ea771",
+    "Name": "NrbRunDiscordChannelsJob",
+    "ModifiedOnUtc": "\/Date(1681901730000)\/",
+    "ManagerName": "SourceCodeSchemaManager",
+    "Caption": "RunDiscordChannelsJob"
+  }
+}
