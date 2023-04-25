@@ -8,8 +8,11 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 	using Terrasoft.Common;
 	using Terrasoft.Core;
 	using Terrasoft.Core.DB;
+    using System.Threading.Tasks;
+    using Discord;
+    using Terrasoft.Core.Entities;
 
-	public class RunDiscordChannelsJob : IJobExecutor
+    public class RunDiscordChannelsJob : IJobExecutor
     {
 		#region Fields: Private
 
@@ -55,6 +58,7 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 			channelSelect.ExecuteReader(reader => {
 				list.Add(reader.GetColumnValue<Guid>("Id").ToString());
 			});
+
 			return list;
 		}
 
@@ -64,8 +68,8 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 		/// <returns></returns>
 		private List<string> GetAllActiveDiscordChannelMsgSettingsIds()
 		{
-			List<string> list = new List<string>();
-			Select channelSelect = new Select(_userConnection)
+			var list = new List<string>();
+			var channelSelect = new Select(_userConnection)
 				.Column("MsgSettingsId")
 				.From("Channel")
 				.Where("ProviderId").IsEqual(Column.Parameter(new Guid("485B5CA7-D878-4BEE-BFBD-30732BF82CE4")))
@@ -73,6 +77,23 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 			channelSelect.ExecuteReader(reader => {
 				list.Add(reader.GetColumnValue<Guid>("MsgSettingsId").ToString());
 			});
+
+			return list;
+		}
+
+		private List<string> GetAllActiveDiscordChannelTokens()
+        {
+			var list = new List<string>();
+			var channelSelect = new Select(_userConnection)
+				.Column("Token")
+				.From("Channel")
+				.Join(JoinType.Inner, "DiscordMsgSettings").On("DiscordMsgSettings", "Id").IsEqual("Channel", "MsgSettingsId")
+				.Where("ProviderId").IsEqual(Column.Parameter(new Guid("485B5CA7-D878-4BEE-BFBD-30732BF82CE4")))
+				.And("IsActive").IsEqual(Column.Parameter(true)) as Select;
+			channelSelect.ExecuteReader(reader => {
+				list.Add(reader.GetColumnValue<string>("Token").ToString());
+			});
+
 			return list;
 		}
 
@@ -86,17 +107,30 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 			_userConnection.ApplicationCache[CacheChannelsName] = _channelsCache;
 		}
 
+		private void LogChannels(IEnumerable<string> list)
+        {
+			var i = 1;
+			foreach(var item in list)
+            {
+				Log.Debug($"Channel {i}: {item}");
+            }
+        }
+
 		/// <summary>
 		/// Start channels that haven't been run yet.
 		/// </summary>
 		private void RunDiscordChannels()
 		{
+			Log.Debug("Start RunDiscordChannels.");
 			var channels = GetAllActiveDiscordChannels();
 			_channelsCache = _userConnection.ApplicationCache[CacheChannelsName] as List<string> ?? new List<string>();
+			LogChannels(channels);
 			var notRanChannels = channels.Where(c => !_channelsCache.Contains(c)).ToList();
+			LogChannels(notRanChannels);
 			if (notRanChannels.Count > 0)
 			{
 				AddToCache(notRanChannels);
+				Log.Debug("Cache added.");
 				var activatedChannels = RunChannels(notRanChannels);
 				if (activatedChannels.ToList().Count != notRanChannels.Count)
 				{
@@ -104,6 +138,16 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 						$" but ran only bot IDs [{string.Join(", ", activatedChannels.Select(c => c.Id))}]");
 				}
 			}
+            else
+            {
+				var activatedChannels = RunChannels(notRanChannels);
+				if (activatedChannels.ToList().Count != notRanChannels.Count)
+				{
+					Log.ErrorFormat($"Tried to run by channel IDs [{string.Join(", ", notRanChannels)}]," +
+						$" but ran only bot IDs [{string.Join(", ", activatedChannels.Select(c => c.Id))}]");
+				}
+			}
+			Log.Debug("Ended RunDiscordChannels.");
 		}
 
 		/// <summary>
@@ -112,18 +156,65 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 		private void CheckDiscordChannels()
 		{
 			var msgSettingsIds = GetAllActiveDiscordChannelMsgSettingsIds();
+			
 			throw new NotImplementedException();
 		}
 
 		/// <summary>
-		/// Start channels connection.
+		/// Start channels connection that haven't been ran yet.
 		/// </summary>
 		/// <param name="notRanChannels"></param>
 		/// <returns></returns>
 		private IEnumerable<DiscordChannelInfo> RunChannels(List<string> notRanChannels)
 		{
-			throw new NotImplementedException();
+			Log.Debug("Started RunChannels.");
+			var list = GetAllActiveDiscordChannelTokens();
+			LogChannels(list);
+			var infoList = new List<DiscordChannelInfo>();
+			foreach(var token in list)
+            {
+				infoList.Add(RunDiscordChannel(token).Result);
+            }
+			Log.Debug($"Ended RunChannels. {infoList[0].Id} {infoList[0].UserName}");
+
+			return infoList;
 		}
+
+		/// <summary>
+		/// Run one Discord channel with a given token.
+		/// </summary>
+		/// <param name="token">Discord bot token</param>
+		/// <returns></returns>
+		private async Task<DiscordChannelInfo> RunDiscordChannel(string token)
+        {
+			Log.Debug("Started RunDiscordChannel.");
+			_client = new DiscordSocketClient();
+            try
+            {
+				Log.Info("Login Discord WebSocket client.");
+				await _client.LoginAsync(TokenType.Bot, token);
+				await _client.StartAsync();
+				if(_client.ConnectionState == ConnectionState.Connected || _client.ConnectionState == ConnectionState.Connecting)
+                {
+					Log.Debug("RunDiscordChannel is connected or connecting.");
+                }
+                else
+                {
+					Log.Debug("RunDiscordChannel not connected.");
+                }
+			}
+            catch(Exception e)
+            {
+				Log.Error($"{DateTime.Now.ToUniversalTime()} {e.Message} {e.StackTrace}");
+            }
+			var info = await _client.GetApplicationInfoAsync();
+			var id = _client.GetUser(info.Id).Id;
+			var userName = _client.GetUser(info.Id).Username;
+			Log.Debug("Ended RunDiscordChannel.");
+
+			return new DiscordChannelInfo(id.ToString(), userName);
+		}
+
 		#endregion
 
 		#region Methods: Public
@@ -138,7 +229,7 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 			Log.DebugFormat("RunDiscordChannelsJob have been started");
 			_userConnection = userConnection;
 			RunDiscordChannels();
-			CheckDiscordChannels();
+			//CheckDiscordChannels();
 			Log.DebugFormat("RunDiscordChannelsJob finished");
 		}
 

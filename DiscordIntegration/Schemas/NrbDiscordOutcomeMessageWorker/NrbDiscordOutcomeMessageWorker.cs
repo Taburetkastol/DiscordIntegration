@@ -7,7 +7,7 @@
 	using OmnichannelProviders.MessageWorkers;
 	using Terrasoft.Core;
 
-	#region Class: TestOutcomeMessageWorker
+	#region Class: DiscordOutcomeMessageWorker
 
 	/// <summary>
 	/// Class that send Test provider messages.
@@ -36,7 +36,7 @@
 		#region Methods: Public	
 
 		/// <summary>
-		/// Send message to Test provider.
+		/// Send message to Discord provider.
 		/// </summary>
 		/// <param name="message">UnifiedMessage message.</param>
 		public string SendMessage(UnifiedMessage unifiedMessage) {
