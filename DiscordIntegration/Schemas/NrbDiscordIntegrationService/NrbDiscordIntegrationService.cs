@@ -97,7 +97,7 @@ namespace Terrasoft.Configuration
 
             var messageManager = new MessageManager(UserConnection);
 
-            string token = "MTA4OTg4NDQ0MDU3NjEzOTI4NA.GqUM9_.a0ZbLWVxtVk_TWXMe9akXPAT6UbJZ3n-kYTz0I";
+            string token = "";
 
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
