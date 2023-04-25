@@ -20,6 +20,7 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 		private List<string> _channelsCache;
 		private DiscordSocketClient _client;
 		private ILog _log;
+		private ILog _discordLog;
 
 		#endregion
 
@@ -38,6 +39,14 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 				return _log ?? (_log = LogManager.GetLogger("OmnichannelMessageHandler"));
 			}
 		}
+
+		protected ILog DiscordLog
+        {
+            get
+            {
+				return _discordLog ?? (_discordLog = LogManager.GetLogger("DiscordMessageHandler"));
+            }
+        }
 
 		#endregion
 
@@ -117,6 +126,18 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
         }
 
 		/// <summary>
+		/// Log discord to DiscordHandler LogManager.
+		/// </summary>
+		/// <param name="msg"></param>
+		/// <returns></returns>
+		private Task LogDiscord(LogMessage msg)
+        {
+			DiscordLog.Info(msg);
+
+			return Task.CompletedTask;
+        }
+
+		/// <summary>
 		/// Start channels that haven't been run yet.
 		/// </summary>
 		private void RunDiscordChannels()
@@ -174,6 +195,7 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 			foreach(var token in list)
             {
 				infoList.Add(RunDiscordChannel(token).Result);
+				Log.Debug("Added bot to list.");
             }
 			Log.Debug($"Ended RunChannels. {infoList[0].Id} {infoList[0].UserName}");
 
@@ -188,32 +210,43 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 		private async Task<DiscordChannelInfo> RunDiscordChannel(string token)
         {
 			Log.Debug("Started RunDiscordChannel.");
-			_client = new DiscordSocketClient();
+			var config = new DiscordSocketConfig()
+			{
+				GatewayIntents = GatewayIntents.AllUnprivileged
+			};
+			_client = new DiscordSocketClient(config);
             try
             {
 				Log.Info("Login Discord WebSocket client.");
 				await _client.LoginAsync(TokenType.Bot, token);
 				await _client.StartAsync();
-				if(_client.ConnectionState == ConnectionState.Connected || _client.ConnectionState == ConnectionState.Connecting)
-                {
-					Log.Debug("RunDiscordChannel is connected or connecting.");
-                }
-                else
-                {
-					Log.Debug("RunDiscordChannel not connected.");
-                }
+				_client.Log += LogDiscord;
+				Log.Debug($"DiscordChannel {_client.ConnectionState}");
+                _client.MessageReceived += ReceiveMessage;
 			}
             catch(Exception e)
             {
-				Log.Error($"{DateTime.Now.ToUniversalTime()} {e.Message} {e.StackTrace}");
+				Log.Error($"{e.Message} {e.StackTrace}");
             }
-			var info = await _client.GetApplicationInfoAsync();
-			var id = _client.GetUser(info.Id).Id;
-			var userName = _client.GetUser(info.Id).Username;
+			//Log.Debug("Before info collected");
+			//var id = _client.CurrentUser.Id;
+			//Log.Debug($"Bot's id: {id}");
+			//var userName = _client.GetUser(id).Username;
+			//Log.Debug($"Bot's name: {userName}");
 			Log.Debug("Ended RunDiscordChannel.");
 
-			return new DiscordChannelInfo(id.ToString(), userName);
+			return new DiscordChannelInfo(1231241.ToString(), "Creatio Integration");
 		}
+
+		private async Task ReceiveMessage(SocketMessage msg)
+        {
+			Log.Debug("Received message.");
+			if (msg.Content == "!hi")
+			{
+				await msg.Channel.SendMessageAsync("Hello!");
+				Log.Debug("Answered Hello.");
+			}
+        }
 
 		#endregion
 
