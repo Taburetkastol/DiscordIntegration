@@ -67,9 +67,16 @@
 		[WebInvoke(UriTemplate = "receive", Method = "POST", RequestFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Bare,
 		  ResponseFormat = WebMessageFormat.Json)]
 		public void ReceiveMessage(DiscordIncomingMessage message) {
-			MessagingMessage messagingMessage = new MessagingMessage(DiscordIncomingMessageConverter.Convert(message));
-			GetChannelAndQueueBySource(messagingMessage);
-			InternalReceive(messagingMessage);
+            try
+            {
+				MessagingMessage messagingMessage = new MessagingMessage(DiscordIncomingMessageConverter.Convert(message));
+				GetChannelAndQueueBySource(messagingMessage);
+				InternalReceive(messagingMessage);
+			}
+            catch(Exception e)
+            {
+				Log.Error($"{e.Message} {e.StackTrace}");
+            }
 		}
 
 		/// <summary>

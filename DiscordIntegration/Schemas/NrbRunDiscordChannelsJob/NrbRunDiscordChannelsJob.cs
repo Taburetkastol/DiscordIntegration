@@ -238,14 +238,21 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 			return new DiscordChannelInfo(1231241.ToString(), "Creatio Integration");
 		}
 
+		/// <summary>
+		/// Message receiving event handler.
+		/// </summary>
+		/// <param name="msg"></param>
+		/// <returns></returns>
 		private async Task ReceiveMessage(SocketMessage msg)
         {
 			Log.Debug("Received message.");
-			if (msg.Content == "!hi")
-			{
-				await msg.Channel.SendMessageAsync("Hello!");
-				Log.Debug("Answered Hello.");
-			}
+			var service = new DiscordOmnichannelMessagingService(_userConnection);
+			service.ReceiveMessage(new DiscordUtils().convertToDiscordMessage(msg));
+			//if (msg.Content == "!hi")
+			//{
+			//	await msg.Channel.SendMessageAsync("Hello!");
+			//	Log.Debug("Answered Hello.");
+			//}
         }
 
 		#endregion

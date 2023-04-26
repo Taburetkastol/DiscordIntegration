@@ -41,6 +41,7 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 					});
 				}
 			}
+
 			return result;
 		}
 
