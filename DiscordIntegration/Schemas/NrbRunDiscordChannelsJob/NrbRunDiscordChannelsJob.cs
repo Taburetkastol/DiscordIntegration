@@ -155,8 +155,8 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 				var activatedChannels = RunChannels(notRanChannels);
 				if (activatedChannels.ToList().Count != notRanChannels.Count)
 				{
-					Log.ErrorFormat($"Tried to run by channel IDs [{string.Join(", ", notRanChannels)}]," +
-						$" but ran only bot IDs [{string.Join(", ", activatedChannels.Select(c => c.Id))}]");
+					//Log.ErrorFormat($"Tried to run by channel IDs [{string.Join(", ", notRanChannels)}]," +
+						//$" but ran only bot IDs [{string.Join(", ", activatedChannels.Select(c => c.Id))}]");
 				}
 			}
             else
@@ -164,8 +164,8 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
 				var activatedChannels = RunChannels(notRanChannels);
 				if (activatedChannels.ToList().Count != notRanChannels.Count)
 				{
-					Log.ErrorFormat($"Tried to run by channel IDs [{string.Join(", ", notRanChannels)}]," +
-						$" but ran only bot IDs [{string.Join(", ", activatedChannels.Select(c => c.Id))}]");
+					//Log.ErrorFormat($"Tried to run by channel IDs [{string.Join(", ", notRanChannels)}]," +
+						//$" but ran only bot IDs [{string.Join(", ", activatedChannels.Select(c => c.Id))}]");
 				}
 			}
 			Log.Debug("Ended RunDiscordChannels.");
@@ -247,7 +247,7 @@ namespace Terrasoft.Configuration.Omnichannel.Messaging
         {
 			Log.Debug("Received message.");
 			var service = new DiscordOmnichannelMessagingService(_userConnection);
-			service.ReceiveMessage(new DiscordUtils().convertToDiscordMessage(msg));
+			service.ReceiveMessage(new DiscordUtils().convertToDiscordMessage(msg, _userConnection));
 			//if (msg.Content == "!hi")
 			//{
 			//	await msg.Channel.SendMessageAsync("Hello!");
